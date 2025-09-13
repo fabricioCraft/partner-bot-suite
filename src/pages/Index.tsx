@@ -96,7 +96,7 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
+            <div className="grid lg:grid-cols-1 gap-8 max-w-lg mx-auto">
               <Card className="shadow-card">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
@@ -118,11 +118,6 @@ const Index = () => {
                         <span className="text-sm">{item}</span>
                       </div>
                     ))}
-                  </div>
-                  <div className="pt-4 border-t">
-                    <p className="text-sm font-medium text-business-blue">
-                      ⏱️ Prazo: Implantação em até 15 dias úteis após kickoff
-                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -148,26 +143,6 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-card bg-gradient-success text-white">
-                  <CardHeader>
-                    <CardTitle className="text-center">Ganho do Parceiro</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span>Setup (15%)</span>
-                      <span className="font-bold">R$ 1.470</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Mensalidade (10%)</span>
-                      <span className="font-bold">R$ 195/mês</span>
-                    </div>
-                    <div className="pt-2 border-t border-green-300">
-                      <p className="text-center text-sm text-green-100">
-                        Por 12 meses consecutivos
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </div>
 
@@ -234,7 +209,7 @@ const Index = () => {
               ))}
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
+            <div className="grid lg:grid-cols-1 gap-8 max-w-lg mx-auto">
               <Card className="shadow-card bg-gradient-primary text-white">
                 <CardHeader>
                   <CardTitle className="text-center">Proposta Combo</CardTitle>
@@ -246,41 +221,19 @@ const Index = () => {
                       <span>R$ 23.400</span>
                     </div>
                     <div className="flex justify-between text-blue-200 text-sm">
-                      <span>Desconto disponível (10%)</span>
-                      <span>-R$ 2.340</span>
+                      <span>Desconto disponível (20%)</span>
+                      <span>-R$ 4.680</span>
                     </div>
                     <div className="border-t border-blue-300 pt-2">
                       <div className="flex justify-between font-bold text-lg">
                         <span>Total Setup</span>
-                        <span>R$ 21.060</span>
+                        <span>R$ 18.720</span>
                       </div>
                     </div>
                   </div>
                   <div className="text-center pt-4">
                     <p className="text-blue-100 text-sm">Mensalidade</p>
                     <p className="text-2xl font-bold">R$ 3.900<span className="text-lg">/mês</span></p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-card bg-gradient-success text-white">
-                <CardHeader>
-                  <CardTitle className="text-center">Ganho do Parceiro</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span>Setup (15%)</span>
-                      <span className="font-bold">R$ 3.510</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Mensalidade (10%)</span>
-                      <span className="font-bold">R$ 390/mês</span>
-                    </div>
-                  </div>
-                  <div className="pt-4 border-t border-green-300 text-center">
-                    <p className="text-lg font-bold">Total Ano 1</p>
-                    <p className="text-2xl font-bold">R$ 8.190</p>
                   </div>
                 </CardContent>
               </Card>
@@ -321,7 +274,7 @@ const Index = () => {
               ))}
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
+            <div className="grid lg:grid-cols-1 gap-8 max-w-lg mx-auto">
               <Card className="shadow-card bg-gradient-primary text-white">
                 <CardHeader>
                   <CardTitle className="text-center">Proposta Combo</CardTitle>
@@ -333,41 +286,19 @@ const Index = () => {
                       <span>R$ 21.400</span>
                     </div>
                     <div className="flex justify-between text-blue-200 text-sm">
-                      <span>Desconto disponível (10%)</span>
-                      <span>-R$ 2.140</span>
+                      <span>Desconto disponível (20%)</span>
+                      <span>-R$ 4.280</span>
                     </div>
                     <div className="border-t border-blue-300 pt-2">
                       <div className="flex justify-between font-bold text-lg">
                         <span>Total Setup</span>
-                        <span>R$ 19.260</span>
+                        <span>R$ 17.120</span>
                       </div>
                     </div>
                   </div>
                   <div className="text-center pt-4">
                     <p className="text-blue-100 text-sm">Mensalidade</p>
                     <p className="text-2xl font-bold">R$ 3.500<span className="text-lg">/mês</span></p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-card bg-gradient-success text-white">
-                <CardHeader>
-                  <CardTitle className="text-center">Ganho do Parceiro</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span>Setup (15%)</span>
-                      <span className="font-bold">R$ 3.210</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Mensalidade (10%)</span>
-                      <span className="font-bold">R$ 350/mês</span>
-                    </div>
-                  </div>
-                  <div className="pt-4 border-t border-green-300 text-center">
-                    <p className="text-lg font-bold">Total Ano 1</p>
-                    <p className="text-2xl font-bold">R$ 7.410</p>
                   </div>
                 </CardContent>
               </Card>

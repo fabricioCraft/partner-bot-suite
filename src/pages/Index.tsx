@@ -2,8 +2,107 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Bot, TrendingUp, Users, BarChart3, MessageSquare, Zap, Shield } from "lucide-react";
+import { RejectionPopup, ReasonPopup } from "@/components/ui/rejection-popup";
+import { useState } from "react";
 
 const Index = () => {
+  const [rejectionPopup, setRejectionPopup] = useState({ isOpen: false, proposalData: null });
+  const [reasonPopup, setReasonPopup] = useState(false);
+  const [currentProposalData, setCurrentProposalData] = useState(null);
+
+  const handleRejectClick = (proposalData: any) => {
+    setCurrentProposalData(proposalData);
+    setRejectionPopup({ isOpen: true, proposalData });
+  };
+
+  const handleConfirmRejection = () => {
+    setRejectionPopup({ isOpen: false, proposalData: null });
+    setReasonPopup(true);
+  };
+
+  const handleCloseRejection = () => {
+    setRejectionPopup({ isOpen: false, proposalData: null });
+  };
+
+  const handleSubmitReason = (reason: string) => {
+    console.log('Motivo da recusa:', reason);
+    setReasonPopup(false);
+    // Aqui você pode implementar o envio do feedback para um serviço
+  };
+
+  const handleCloseReason = () => {
+    setReasonPopup(false);
+  };
+
+  const handleAcceptProposal = async (proposalData: any, clientName: string = "Cliente 1") => {
+    try {
+      // Extrair valor numérico do preço
+      const extractNumericValue = (priceString: string) => {
+        const matches = priceString.match(/R\$\s*([\d.,]+)/g);
+        if (matches && matches.length > 0) {
+          const numericString = matches[0].replace(/R\$\s*/, '').replace(/\./g, '').replace(',', '.');
+          return parseFloat(numericString) || 0;
+        }
+        return 0;
+      };
+
+      // Formatar escopo detalhado
+      const formatScope = () => {
+        const title = proposalData?.title || "Proposta Comercial - Cliente 1";
+        const benefits = proposalData?.benefits || [
+          'Acelera o processo de qualificação em múltiplos canais',
+          'Aumento de conversão: taxas até 30% mais altas',
+          'Centralização e controle: CRM sempre atualizado',
+          'Economia direta com mão de obra'
+        ];
+        return `${title}\n\nBenefícios inclusos:\n${benefits.map((benefit, index) => `${index + 1}. ${benefit}`).join('\n')}`;
+      };
+
+      const payload = {
+        precoPropostaNumerica: extractNumericValue(proposalData?.price || "R$ 1.950"),
+        escopoDetalhado: formatScope(),
+        informacoesCliente: {
+          nome: clientName,
+          email: "cliente@exemplo.com",
+          telefone: "+5521999999999"
+        },
+        timestamp: new Date().toISOString(),
+        origem: "partner-bot-suite",
+        precoOriginal: proposalData?.price || "R$ 1.950/mês"
+      };
+
+      console.log('Enviando payload para webhook n8n:', payload);
+
+      const response = await fetch('https://webhooks.evolutta.com.br/webhook/api/v1/aceitar-proposta', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      console.log('Status da resposta:', response.status);
+      
+      if (response.ok) {
+        const responseData = await response.text();
+        console.log('✅ Proposta aceita enviada com sucesso para o n8n');
+        console.log('Resposta do webhook:', responseData);
+        alert('Proposta aceita com sucesso! Entraremos em contato em breve.');
+      } else {
+        const errorText = await response.text();
+        console.error('❌ Erro ao enviar proposta aceita:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorBody: errorText
+        });
+        alert('Erro ao processar aceitação da proposta. Tente novamente.');
+      }
+    } catch (error) {
+      console.error('❌ Erro na requisição para o webhook:', error);
+      alert('Erro de conexão. Verifique sua internet e tente novamente.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Header */}
@@ -11,12 +110,13 @@ const Index = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Bot className="h-8 w-8 text-business-purple" />
-              <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                AI Solutions
-              </span>
+              <img src="/evolutta-logo.svg" alt="Evolutta IA" className="h-12" />
             </div>
-            <Button variant="default" className="bg-gradient-primary shadow-premium">
+            <Button 
+              variant="default" 
+              className="bg-gradient-primary shadow-premium"
+              onClick={() => window.open('https://wa.me/5521992271056?text=Ol%C3%A1,%20gostaria%20de%20conversar%20mais%20sobre%20a%20proposta', '_blank')}
+            >
               Contato
             </Button>
           </div>
@@ -32,7 +132,7 @@ const Index = () => {
           </h1>
           <p className="text-xl mb-8 text-blue-100 max-w-3xl mx-auto">
             Soluções completas de automação com agentes SDR, integrações CRM e dashboards exclusivos. 
-            Propostas comerciais premium para agências e parceiros estratégicos.
+            Propostas comerciais premium para empresas estratégicas.
           </p>
           <div className="grid lg:grid-cols-2 gap-8 mt-8">
               <Card className="shadow-card">
@@ -134,22 +234,21 @@ const Index = () => {
       <section className="py-16">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Estrutura Premium para Parceiros</h2>
+            <h2 className="text-3xl font-bold mb-4">Estrutura Premium</h2>
             <p className="text-business-gray max-w-2xl mx-auto">
-              Nossa metodologia comprovada garante alta margem para parceiros e valor excepcional para clientes finais
+              Nossa metodologia comprovada garante valor excepcional para clientes
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-6">
+          <div className="flex flex-wrap justify-center items-center gap-6 min-h-[50vh]">
             {[
               { icon: BarChart3, title: "Diagnóstico & Escopo", desc: "Análise detalhada das necessidades" },
               { icon: Zap, title: "Setup + Integrações", desc: "Implementação completa em 15 dias" },
               { icon: TrendingUp, title: "Dashboard Incluso", desc: "Métricas e KPIs em tempo real" },
               { icon: Shield, title: "Gestão de Projeto", desc: "Suporte contínuo e melhorias" },
-              { icon: Users, title: "Margem Parceiro", desc: "15% setup + 10% recorrente" },
               { icon: MessageSquare, title: "Valor Justificado", desc: "ROI comprovado para o cliente" }
             ].map((item, index) => (
-              <div key={index} className="text-center shadow-card hover:shadow-premium transition-all duration-300 rounded-lg border bg-card text-card-foreground shadow-sm p-6 pt-6">
+              <div key={index} className="text-center shadow-card hover:shadow-premium transition-all duration-300 rounded-lg border bg-card text-card-foreground shadow-sm p-6 pt-6 w-full sm:w-64 md:w-72 lg:w-80 min-h-[200px] flex flex-col justify-between">
                 <item.icon className="h-12 w-12 text-business-purple mx-auto mb-4" />
                 <h3 className="font-semibold mb-2 text-center">{item.title}</h3>
                 <p className="text-sm text-business-gray">{item.desc}</p>
@@ -205,27 +304,7 @@ const Index = () => {
             </div>
 
             <div className="mt-8 grid lg:grid-cols-2 gap-8">
-              <Card className="shadow-card bg-gradient-primary text-white">
-                <CardHeader>
-                  <CardTitle className="text-center">Proposta Comercial</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-center">
-                    <div className="mb-4">
-                      <p className="text-blue-100 text-sm">Setup único</p>
-                      <p className="text-3xl font-bold">R$ 9.800</p>
-                      <p className="text-blue-200 text-xs">Tudo incluso</p>
-                    </div>
-                    <div>
-                      <p className="text-blue-100 text-sm">Mensalidade</p>
-                      <p className="text-2xl font-bold">R$ 1.950<span className="text-lg">/mês</span></p>
-                      <p className="text-blue-200 text-xs">Suporte completo</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-card">
+              <Card className="shadow-card order-2 lg:order-1">
                 <CardHeader>
                   <CardTitle className="text-business-purple">Justificativa de Valor</CardTitle>
                 </CardHeader>
@@ -268,6 +347,62 @@ const Index = () => {
                 </div>
               </CardContent>
             </Card>
+
+              <Card className="shadow-card bg-gradient-primary text-white order-1 lg:order-2">
+                <CardHeader>
+                  <CardTitle className="text-center">Proposta Comercial</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-center">
+                    <div className="mb-4">
+                      <p className="text-blue-100 text-sm">Setup único</p>
+                      <p className="text-3xl font-bold">R$ 9.800</p>
+                      <p className="text-blue-200 text-xs">Tudo incluso</p>
+                    </div>
+                    <div className="mb-6">
+                      <p className="text-blue-100 text-sm">Gestão</p>
+                      <p className="text-2xl font-bold">R$ 1.950<span className="text-lg">/mês</span></p>
+                      <p className="text-blue-200 text-xs">Suporte completo</p>
+                    </div>
+                    <div className="flex flex-col space-y-3">
+                      <Button 
+                        className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+                        onClick={() => handleAcceptProposal({
+                          title: 'Proposta Comercial - Cliente 1',
+                          price: 'Setup: R$ 9.800 | Gestão: R$ 1.950/mês',
+                          benefits: [
+                            'Acelera o processo de qualificação em múltiplos canais, sem necessidade de SDR humano inicial',
+                            'Aumento de conversão: taxas até 30% mais altas que métodos tradicionais',
+                            'Centralização e controle: CRM sempre atualizado com leads qualificados',
+                            'Economia direta com mão de obra: redução de custos operacionais'
+                          ]
+                        }, "Cliente 1")}
+                      >
+                        <CheckCircle className="h-5 w-5 mr-2" />
+                        Aceitar Agora
+                      </Button>
+                      <Button 
+                      variant="outline" 
+                      className="border-blue-300 text-blue-100 hover:bg-blue-50 hover:text-blue-600 py-2 px-6 rounded-lg"
+                      onClick={() => handleRejectClick({
+                        title: 'Proposta Comercial - Cliente 1',
+                        price: 'Setup: R$ 9.800 | Gestão: R$ 1.950/mês',
+                        benefits: [
+                          'Acelera o processo de qualificação em múltiplos canais, sem necessidade de SDR humano inicial',
+                          'Aumento de conversão: taxas até 30% mais altas de captação sem perdas por demora',
+                          'Centralização e controle: CRM sempre atualizado e dashboards de gestão',
+                          'Economia direta com mão de obra: substitui salário de SDR (R$ 3k/mês) funcionando 24/7',
+                          'Menos retrabalho para vendedores: só leads potenciais chegam para venda',
+                          'Time ganha agilidade e capacidade de atendimento simultâneo impossível manualmente'
+                        ]
+                      })}
+                    >
+                      Recusar
+                    </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
@@ -364,35 +499,7 @@ const Index = () => {
             </div>
 
             <div className="grid lg:grid-cols-2 gap-8">
-              <Card className="shadow-card bg-gradient-primary text-white">
-                <CardHeader>
-                  <CardTitle className="text-center">Proposta Combo</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>3 Agentes + Dashboard</span>
-                      <span>R$ 23.400</span>
-                    </div>
-                    <div className="flex justify-between text-blue-200 text-sm">
-                      <span>Desconto disponível (20%)</span>
-                      <span>-R$ 4.680</span>
-                    </div>
-                    <div className="border-t border-blue-300 pt-2">
-                      <div className="flex justify-between font-bold text-lg">
-                        <span>Total Setup</span>
-                        <span>R$ 18.720</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-center pt-4">
-                    <p className="text-blue-100 text-sm">Mensalidade</p>
-                    <p className="text-2xl font-bold">R$ 3.900<span className="text-lg">/mês</span></p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="shadow-card">
+              <Card className="shadow-card order-2 lg:order-1">
                 <CardHeader>
                   <CardTitle className="text-business-purple">Justificativa de Valor</CardTitle>
                 </CardHeader>
@@ -419,6 +526,72 @@ const Index = () => {
                         <p className="text-xs text-business-gray">Nenhum concorrente local vai operar com nível de automação semelhante — é argumento de venda para captar mais leads</p>
                       </div>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="shadow-card bg-gradient-primary text-white order-1 lg:order-2">
+                <CardHeader>
+                  <CardTitle className="text-center">Proposta Combo</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>3 Agentes + Dashboard</span>
+                      <span>R$ 23.400</span>
+                    </div>
+                    <div className="flex justify-between text-blue-200 text-sm">
+                      <span>Desconto disponível (20%)</span>
+                      <span>-R$ 4.680</span>
+                    </div>
+                    <div className="border-t border-blue-300 pt-2">
+                      <div className="flex justify-between font-bold text-lg">
+                        <span>Total Setup</span>
+                        <span>R$ 18.720</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-center pt-4 mb-6">
+                    <p className="text-blue-100 text-sm">Gestão</p>
+                    <p className="text-2xl font-bold">R$ 3.900<span className="text-lg">/mês</span></p>
+                  </div>
+                  <div className="flex flex-col space-y-3">
+                    <Button 
+                      className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+                      onClick={() => handleAcceptProposal({
+                        title: 'Proposta Combo - Cliente 2',
+                        price: 'Setup: R$ 18.720 | Gestão: R$ 3.900/mês',
+                        benefits: [
+                          'Sistema completo com 3 agentes de IA especializados (SDR 2.0, Simulador Financeiro, Porto Seguro)',
+                          'Processo de simulação instantâneo que aumenta credibilidade e velocidade de fechamento',
+                          'Integração com APIs do Banco Central/fintechs para taxas em tempo real',
+                          'Push automático para API da Porto Seguro com processo de emissão automática',
+                          'Redução do custo operacional: substitui vários SDRs, assistentes e analistas de financiamento',
+                          'Diferencial competitivo total: nível de automação que nenhum concorrente local possui'
+                        ]
+                      }, "Cliente 2")}
+                    >
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                      Aceitar Agora
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="border-blue-300 text-blue-100 hover:bg-blue-50 hover:text-blue-600 py-2 px-6 rounded-lg"
+                      onClick={() => handleRejectClick({
+                        title: 'Proposta Combo - Cliente 2',
+                        price: 'Setup: R$ 18.720 | Gestão: R$ 3.900/mês',
+                        benefits: [
+                          'Sistema completo com 3 agentes de IA especializados (SDR 2.0, Simulador Financeiro, Porto Seguro)',
+                          'Processo de simulação instantâneo que aumenta credibilidade e velocidade de fechamento',
+                          'Integração com APIs do Banco Central/fintechs para taxas em tempo real',
+                          'Push automático para API da Porto Seguro com processo de emissão automática',
+                          'Redução do custo operacional: substitui vários SDRs, assistentes e analistas de financiamento',
+                          'Diferencial competitivo total: nível de automação que nenhum concorrente local possui'
+                        ]
+                      })}
+                    >
+                      Recusar
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -522,35 +695,7 @@ const Index = () => {
             </div>
 
             <div className="grid lg:grid-cols-2 gap-8">
-              <Card className="shadow-card bg-gradient-primary text-white">
-                <CardHeader>
-                  <CardTitle className="text-center">Proposta Combo</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>3 Agentes + Dashboard</span>
-                      <span>R$ 20.100</span>
-                    </div>
-                    <div className="flex justify-between text-blue-200 text-sm">
-                      <span>Desconto disponível (20%)</span>
-                      <span>-R$ 3.015</span>
-                    </div>
-                    <div className="border-t border-blue-300 pt-2">
-                      <div className="flex justify-between font-bold text-lg">
-                        <span>Total Setup</span>
-                        <span>R$ 17.085</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-center pt-4">
-                    <p className="text-blue-100 text-sm">Mensalidade</p>
-                    <p className="text-2xl font-bold">R$ 3.200<span className="text-lg">/mês</span></p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="shadow-card">
+              <Card className="shadow-card order-2 lg:order-1">
                 <CardHeader>
                   <CardTitle className="text-business-purple">Justificativa de Valor</CardTitle>
                 </CardHeader>
@@ -584,13 +729,72 @@ const Index = () => {
                         <p className="text-xs text-business-gray">Dashboard mostra tudo: gargalos, ganhos, campanhas assertivas — facilita correção de rota, tomada de decisão, priorização de actions pelo time</p>
                       </div>
                     </div>
-                    <div className="flex items-start space-x-2">
-                      <Shield className="h-4 w-4 text-business-accent mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-semibold text-sm">Economia e ROI imediato</p>
-                        <p className="text-xs text-business-gray">Setup equivale a um ou dois salários de profissional pleno. Sistema nunca "cansa", "esquece" ou pede demissão. Mensalidade menor que um estagiário — mas faz trabalho de vários</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="shadow-card bg-gradient-primary text-white order-1 lg:order-2">
+                <CardHeader>
+                  <CardTitle className="text-center">Proposta Combo</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>3 Agentes + Dashboard</span>
+                      <span>R$ 20.100</span>
+                    </div>
+                    <div className="flex justify-between text-blue-200 text-sm">
+                      <span>Desconto disponível (20%)</span>
+                      <span>-R$ 3.015</span>
+                    </div>
+                    <div className="border-t border-blue-300 pt-2">
+                      <div className="flex justify-between font-bold text-lg">
+                        <span>Total Setup</span>
+                        <span>R$ 17.085</span>
                       </div>
                     </div>
+                  </div>
+                  <div className="text-center pt-4 mb-6">
+                    <p className="text-blue-100 text-sm">Gestão</p>
+                    <p className="text-2xl font-bold">R$ 3.200<span className="text-lg">/mês</span></p>
+                  </div>
+                  <div className="flex flex-col space-y-3">
+                    <Button 
+                      className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+                      onClick={() => handleAcceptProposal({
+                        title: 'Proposta Combo - Cliente 3',
+                        price: 'Setup: R$ 17.085 | Gestão: R$ 3.200/mês',
+                        benefits: [
+                          'Sistema avançado com SDR + Follow-up automático + Nutrição de conteúdo',
+                          'Integração dupla: CRM CV + Blip para fluxo multicanal completo',
+                          'Agente de follow-up que reativa leads frios sem ação manual',
+                          'Nutrição automatizada que educa leads até a hora da venda',
+                          'Processo de vendas full digital e escalável funcionando 24/7',
+                          'Gestão centralizada com dashboard para melhoria contínua do processo'
+                        ]
+                      }, "Cliente 3")}
+                    >
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                      Aceitar Agora
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="border-blue-300 text-blue-100 hover:bg-blue-50 hover:text-blue-600 py-2 px-6 rounded-lg"
+                      onClick={() => handleRejectClick({
+                        title: 'Proposta Combo - Cliente 3',
+                        price: 'Setup: R$ 17.085 | Gestão: R$ 3.200/mês',
+                        benefits: [
+                          'Sistema avançado com SDR + Follow-up automático + Nutrição de conteúdo',
+                          'Integração dupla: CRM CV + Blip para fluxo multicanal completo',
+                          'Agente de follow-up que reativa leads frios sem ação manual',
+                          'Nutrição automatizada que educa leads até a hora da venda',
+                          'Processo de vendas full digital e escalável funcionando 24/7',
+                          'Gestão centralizada com dashboard para melhoria contínua do processo'
+                        ]
+                      })}
+                    >
+                      Recusar
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -619,13 +823,17 @@ const Index = () => {
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-4xl font-bold mb-6">Pronto para Revolucionar Suas Vendas?</h2>
           <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-            Junte-se aos nossos parceiros e ofereça soluções de IA que realmente transformam negócios.
+            Descubra soluções de IA que realmente transformam negócios.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="outline" className="bg-white text-business-purple border-white hover:bg-blue-50">
               Ver Demonstração
             </Button>
-            <Button size="lg" className="bg-white/10 text-white border border-white/20 hover:bg-white/20">
+            <Button 
+              size="lg" 
+              className="bg-white/10 text-white border border-white/20 hover:bg-white/20"
+              onClick={() => window.open('https://wa.me/5521992271056?text=Ol%C3%A1,%20gostaria%20de%20conversar%20mais%20sobre%20a%20proposta', '_blank')}
+            >
               Falar com Especialista
             </Button>
           </div>
@@ -638,8 +846,7 @@ const Index = () => {
           <div className="grid md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <Bot className="h-6 w-6" />
-                <span className="text-xl font-bold">AI Solutions</span>
+                <img src="/evolutta-logo.svg" alt="Evolutta IA" className="h-8" />
               </div>
               <p className="text-sm text-muted-foreground">
                 Especialistas em automação de vendas com agentes de IA para WhatsApp.
@@ -666,6 +873,30 @@ const Index = () => {
           </div>
         </div>
       </footer>
+      
+      {/* Popups de Recusa */}
+      {rejectionPopup.proposalData && (
+        <RejectionPopup
+          isOpen={rejectionPopup.isOpen}
+          onClose={handleCloseRejection}
+          onConfirmRejection={handleConfirmRejection}
+          proposalTitle={rejectionPopup.proposalData.title}
+          proposalPrice={rejectionPopup.proposalData.price}
+          proposalBenefits={rejectionPopup.proposalData.benefits}
+        />
+      )}
+      
+      <ReasonPopup
+        isOpen={reasonPopup}
+        onClose={handleCloseReason}
+        onSubmitReason={handleSubmitReason}
+        proposalData={currentProposalData}
+        clientData={{
+          name: "Cliente Potencial",
+          email: "cliente@exemplo.com",
+          phone: "+5521999999999"
+        }}
+      />
     </div>
   );
 };

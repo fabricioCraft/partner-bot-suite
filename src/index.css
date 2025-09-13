@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
@@ -17,17 +17,17 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 84% 4.9%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 270 91% 35%; /* Roxo principal da Evolutta */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 270 20% 96%;
+    --secondary-foreground: 270 91% 35%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 270 20% 96%;
+    --muted-foreground: 270 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 270 20% 96%;
+    --accent-foreground: 270 91% 35%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -36,22 +36,36 @@ All colors MUST be HSL.
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    /* Premium Business Colors */
-    --business-blue: 220 91% 50%;
-    --business-blue-dark: 220 91% 40%;
-    --business-green: 142 76% 36%;
-    --business-green-light: 142 69% 58%;
-    --business-gray: 220 8.9% 46.1%;
-    --business-gray-light: 220 14.3% 95.9%;
+    /* Premium Business Colors - Evolutta Palette */
+    --business-purple: 270 91% 35%; /* Roxo principal */
+    --business-purple-dark: 270 91% 25%; /* Roxo escuro */
+    --business-purple-light: 270 50% 85%; /* Roxo claro */
+    --business-accent: 280 100% 70%; /* Roxo vibrante para destaques */
+    --business-gray: 270 15% 45%; /* Cinza com tom roxo */
+    --business-gray-light: 270 20% 96%; /* Cinza muito claro */
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--business-blue)), hsl(var(--business-blue-dark)));
-    --gradient-success: linear-gradient(135deg, hsl(var(--business-green)), hsl(var(--business-green-light)));
-    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--business-gray-light)));
+    /* Gradients - Evolutta Style */
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(var(--business-purple)),
+      hsl(var(--business-purple-dark))
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(var(--business-purple)),
+      hsl(var(--business-accent))
+    );
+    --gradient-subtle: linear-gradient(
+      180deg,
+      hsl(var(--background)),
+      hsl(var(--business-gray-light))
+    );
 
     /* Shadows */
-    --shadow-premium: 0 20px 25px -5px hsl(var(--business-blue) / 0.1), 0 10px 10px -5px hsl(var(--business-blue) / 0.04);
-    --shadow-card: 0 4px 6px -1px hsl(var(--business-gray) / 0.1), 0 2px 4px -1px hsl(var(--business-gray) / 0.06);
+    --shadow-premium: 0 20px 25px -5px hsl(var(--business-purple) / 0.1),
+      0 10px 10px -5px hsl(var(--business-purple) / 0.04);
+    --shadow-card: 0 4px 6px -1px hsl(var(--business-gray) / 0.1),
+      0 2px 4px -1px hsl(var(--business-gray) / 0.06);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -116,10 +130,11 @@ All colors MUST be HSL.
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--border);
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }

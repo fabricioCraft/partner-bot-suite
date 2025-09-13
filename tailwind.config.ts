@@ -48,10 +48,10 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         business: {
-          blue: "hsl(var(--business-blue))",
-          "blue-dark": "hsl(var(--business-blue-dark))",
-          green: "hsl(var(--business-green))",
-          "green-light": "hsl(var(--business-green-light))",
+          purple: "hsl(var(--business-purple))",
+          "purple-dark": "hsl(var(--business-purple-dark))",
+          "purple-light": "hsl(var(--business-purple-light))",
+          accent: "hsl(var(--business-accent))",
           gray: "hsl(var(--business-gray))",
           "gray-light": "hsl(var(--business-gray-light))",
         },
@@ -68,7 +68,7 @@ export default {
       },
       backgroundImage: {
         "gradient-primary": "var(--gradient-primary)",
-        "gradient-success": "var(--gradient-success)",
+        "gradient-accent": "var(--gradient-accent)",
         "gradient-subtle": "var(--gradient-subtle)",
       },
       boxShadow: {

@@ -3,12 +3,141 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Bot, TrendingUp, Users, BarChart3, MessageSquare, Zap, Shield } from "lucide-react";
 import { RejectionPopup, ReasonPopup } from "@/components/ui/rejection-popup";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Index = () => {
   const [rejectionPopup, setRejectionPopup] = useState({ isOpen: false, proposalData: null });
   const [reasonPopup, setReasonPopup] = useState(false);
   const [currentProposalData, setCurrentProposalData] = useState(null);
+  const [acceptedProposals, setAcceptedProposals] = useState({
+    "Cliente 1": false,
+    "Cliente 2": false,
+    "Cliente 3": false
+  });
+
+  // Controlar scroll e overlay quando popups estão ativos
+  const isAnyPopupOpen = rejectionPopup.isOpen || reasonPopup;
+  
+  useEffect(() => {
+    const isInsidePopup = (element: Element | null): boolean => {
+      if (!element) return false;
+      
+      // Verificar se o elemento está dentro de um popup
+      const popupSelectors = [
+        '[role="dialog"]',
+        '[data-radix-dialog-content]',
+        '.AlertDialogContent',
+        '[data-state="open"]'
+      ];
+      
+      for (const selector of popupSelectors) {
+        if (element.closest(selector)) {
+          return true;
+        }
+      }
+      
+      return false;
+    };
+
+    const preventScroll = (e: Event) => {
+      const target = e.target as Element;
+      if (!isInsidePopup(target)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+
+    const preventWheel = (e: WheelEvent) => {
+      const target = e.target as Element;
+      if (!isInsidePopup(target)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+
+    const preventTouchMove = (e: TouchEvent) => {
+      const target = e.target as Element;
+      if (!isInsidePopup(target)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+
+    const preventKeyScroll = (e: KeyboardEvent) => {
+      const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '];
+      if (scrollKeys.includes(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+
+    if (isAnyPopupOpen) {
+      // Salvar posição atual do scroll
+      const scrollY = window.scrollY;
+      
+      // Bloquear scroll do body e html
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.documentElement.style.overflow = 'hidden';
+      
+      // Adicionar event listeners para bloquear todos os tipos de scroll
+      document.addEventListener('scroll', preventScroll, { passive: false });
+      document.addEventListener('wheel', preventWheel, { passive: false });
+      document.addEventListener('touchmove', preventTouchMove, { passive: false });
+      document.addEventListener('keydown', preventKeyScroll, { passive: false });
+      window.addEventListener('scroll', preventScroll, { passive: false });
+      
+      // Bloquear scroll em elementos específicos
+      document.body.addEventListener('scroll', preventScroll, { passive: false });
+      document.documentElement.addEventListener('scroll', preventScroll, { passive: false });
+      
+    } else {
+      // Restaurar scroll do body e html
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.documentElement.style.overflow = '';
+      
+      // Restaurar posição do scroll
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+      
+      // Remover event listeners
+      document.removeEventListener('scroll', preventScroll);
+      document.removeEventListener('wheel', preventWheel);
+      document.removeEventListener('touchmove', preventTouchMove);
+      document.removeEventListener('keydown', preventKeyScroll);
+      window.removeEventListener('scroll', preventScroll);
+      document.body.removeEventListener('scroll', preventScroll);
+      document.documentElement.removeEventListener('scroll', preventScroll);
+    }
+
+    // Cleanup: restaurar scroll quando componente for desmontado
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.documentElement.style.overflow = '';
+      
+      document.removeEventListener('scroll', preventScroll);
+      document.removeEventListener('wheel', preventWheel);
+      document.removeEventListener('touchmove', preventTouchMove);
+      document.removeEventListener('keydown', preventKeyScroll);
+      window.removeEventListener('scroll', preventScroll);
+      document.body.removeEventListener('scroll', preventScroll);
+      document.documentElement.removeEventListener('scroll', preventScroll);
+    };
+  }, [isAnyPopupOpen]);
 
   const handleRejectClick = (proposalData: any) => {
     setCurrentProposalData(proposalData);
@@ -58,11 +187,16 @@ const Index = () => {
         return `${title}\n\nBenefícios inclusos:\n${benefits.map((benefit, index) => `${index + 1}. ${benefit}`).join('\n')}`;
       };
 
+      // Converter clientName para o formato correto
+      const formattedClientName = clientName === "Cliente 1" ? "cliente 1" :
+                                 clientName === "Cliente 2" ? "cliente 2" :
+                                 clientName === "Cliente 3" ? "cliente 3" : "cliente 1";
+
       const payload = {
         precoPropostaNumerica: extractNumericValue(proposalData?.price || "R$ 1.950"),
         escopoDetalhado: formatScope(),
         informacoesCliente: {
-          nome: clientName,
+          nome: formattedClientName,
           email: "cliente@exemplo.com",
           telefone: "+5521999999999"
         },
@@ -87,6 +221,13 @@ const Index = () => {
         const responseData = await response.text();
         console.log('✅ Proposta aceita enviada com sucesso para o n8n');
         console.log('Resposta do webhook:', responseData);
+        
+        // Atualizar o estado para mostrar que a proposta foi aceita
+        setAcceptedProposals(prev => ({
+          ...prev,
+          [clientName]: true
+        }));
+        
         alert('Proposta aceita com sucesso! Entraremos em contato em breve.');
       } else {
         const errorText = await response.text();
@@ -365,40 +506,49 @@ const Index = () => {
                       <p className="text-blue-200 text-xs">Suporte completo</p>
                     </div>
                     <div className="flex flex-col space-y-3">
-                      <Button 
-                        className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
-                        onClick={() => handleAcceptProposal({
-                          title: 'Proposta Comercial - Cliente 1',
-                          price: 'Setup: R$ 9.800 | Gestão: R$ 1.950/mês',
-                          benefits: [
-                            'Acelera o processo de qualificação em múltiplos canais, sem necessidade de SDR humano inicial',
-                            'Aumento de conversão: taxas até 30% mais altas que métodos tradicionais',
-                            'Centralização e controle: CRM sempre atualizado com leads qualificados',
-                            'Economia direta com mão de obra: redução de custos operacionais'
-                          ]
-                        }, "Cliente 1")}
-                      >
-                        <CheckCircle className="h-5 w-5 mr-2" />
-                        Aceitar Agora
-                      </Button>
-                      <Button 
-                      variant="outline" 
-                      className="border-blue-300 text-blue-100 hover:bg-blue-50 hover:text-blue-600 py-2 px-6 rounded-lg"
-                      onClick={() => handleRejectClick({
-                        title: 'Proposta Comercial - Cliente 1',
-                        price: 'Setup: R$ 9.800 | Gestão: R$ 1.950/mês',
-                        benefits: [
-                          'Acelera o processo de qualificação em múltiplos canais, sem necessidade de SDR humano inicial',
-                          'Aumento de conversão: taxas até 30% mais altas de captação sem perdas por demora',
-                          'Centralização e controle: CRM sempre atualizado e dashboards de gestão',
-                          'Economia direta com mão de obra: substitui salário de SDR (R$ 3k/mês) funcionando 24/7',
-                          'Menos retrabalho para vendedores: só leads potenciais chegam para venda',
-                          'Time ganha agilidade e capacidade de atendimento simultâneo impossível manualmente'
-                        ]
-                      })}
-                    >
-                      Recusar
-                    </Button>
+                      {acceptedProposals["Cliente 1"] ? (
+                        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg text-center">
+                          <CheckCircle className="h-6 w-6 mx-auto mb-2 text-green-600" />
+                          <p className="font-semibold">Proposta Aceita!</p>
+                          <p className="text-sm">Entraremos em contato em breve.</p>
+                        </div>
+                      ) : (
+                        <>
+                          <Button 
+                            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+                            onClick={() => handleAcceptProposal({
+                              title: 'Proposta Comercial - Cliente 1',
+                              price: 'Setup: R$ 9.800 | Gestão: R$ 1.950/mês',
+                              benefits: [
+                                'Acelera o processo de qualificação em múltiplos canais, sem necessidade de SDR humano inicial',
+                                'Aumento de conversão: taxas até 30% mais altas que métodos tradicionais',
+                                'Centralização e controle: CRM sempre atualizado com leads qualificados',
+                                'Economia direta com mão de obra: redução de custos operacionais'
+                              ]
+                            }, "Cliente 1")}
+                          >
+                            <CheckCircle className="h-5 w-5 mr-2" />
+                            Aceitar Agora
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            className="border-blue-300 text-blue-100 hover:bg-blue-50 hover:text-blue-600 py-2 px-6 rounded-lg"
+                            onClick={() => handleRejectClick({
+                              title: 'Proposta Comercial - Cliente 1',
+                              price: 'Setup: R$ 9.800 | Gestão: R$ 1.950/mês',
+                              benefits: [
+                                'Acelera o processo de qualificação em múltiplos canais, sem necessidade de SDR humano inicial',
+                                'Aumento de conversão: taxas até 30% mais altas de captação sem perdas por demora',
+                                'Centralização e controle: CRM sempre atualizado e dashboards de gestão',
+                                'Economia direta com mão de obra: substitui salário de SDR (R$ 3k/mês) funcionando 24/7',
+                                'Menos retrabalho para vendedores: só leads potenciais chegam para venda',
+                                'Time ganha agilidade e capacidade de atendimento simultâneo impossível manualmente'
+                              ]
+                            })}
+                          >
+                            Recusar
+                          </Button>
+                        </>                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -556,42 +706,52 @@ const Index = () => {
                     <p className="text-2xl font-bold">R$ 3.900<span className="text-lg">/mês</span></p>
                   </div>
                   <div className="flex flex-col space-y-3">
-                    <Button 
-                      className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
-                      onClick={() => handleAcceptProposal({
-                        title: 'Proposta Combo - Cliente 2',
-                        price: 'Setup: R$ 18.720 | Gestão: R$ 3.900/mês',
-                        benefits: [
-                          'Sistema completo com 3 agentes de IA especializados (SDR 2.0, Simulador Financeiro, Porto Seguro)',
-                          'Processo de simulação instantâneo que aumenta credibilidade e velocidade de fechamento',
-                          'Integração com APIs do Banco Central/fintechs para taxas em tempo real',
-                          'Push automático para API da Porto Seguro com processo de emissão automática',
-                          'Redução do custo operacional: substitui vários SDRs, assistentes e analistas de financiamento',
-                          'Diferencial competitivo total: nível de automação que nenhum concorrente local possui'
-                        ]
-                      }, "Cliente 2")}
-                    >
-                      <CheckCircle className="h-5 w-5 mr-2" />
-                      Aceitar Agora
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="border-blue-300 text-blue-100 hover:bg-blue-50 hover:text-blue-600 py-2 px-6 rounded-lg"
-                      onClick={() => handleRejectClick({
-                        title: 'Proposta Combo - Cliente 2',
-                        price: 'Setup: R$ 18.720 | Gestão: R$ 3.900/mês',
-                        benefits: [
-                          'Sistema completo com 3 agentes de IA especializados (SDR 2.0, Simulador Financeiro, Porto Seguro)',
-                          'Processo de simulação instantâneo que aumenta credibilidade e velocidade de fechamento',
-                          'Integração com APIs do Banco Central/fintechs para taxas em tempo real',
-                          'Push automático para API da Porto Seguro com processo de emissão automática',
-                          'Redução do custo operacional: substitui vários SDRs, assistentes e analistas de financiamento',
-                          'Diferencial competitivo total: nível de automação que nenhum concorrente local possui'
-                        ]
-                      })}
-                    >
-                      Recusar
-                    </Button>
+                    {acceptedProposals["Cliente 2"] ? (
+                      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg text-center">
+                        <CheckCircle className="h-6 w-6 mx-auto mb-2 text-green-600" />
+                        <p className="font-semibold">Proposta Aceita!</p>
+                        <p className="text-sm">Entraremos em contato em breve.</p>
+                      </div>
+                    ) : (
+                      <>
+                        <Button 
+                          className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+                          onClick={() => handleAcceptProposal({
+                            title: 'Proposta Combo - Cliente 2',
+                            price: 'Setup: R$ 18.720 | Gestão: R$ 3.900/mês',
+                            benefits: [
+                              'Sistema completo com 3 agentes de IA especializados (SDR 2.0, Simulador Financeiro, Porto Seguro)',
+                              'Processo de simulação instantâneo que aumenta credibilidade e velocidade de fechamento',
+                              'Integração com APIs do Banco Central/fintechs para taxas em tempo real',
+                              'Push automático para API da Porto Seguro com processo de emissão automática',
+                              'Redução do custo operacional: substitui vários SDRs, assistentes e analistas de financiamento',
+                              'Diferencial competitivo total: nível de automação que nenhum concorrente local possui'
+                            ]
+                          }, "Cliente 2")}
+                        >
+                          <CheckCircle className="h-5 w-5 mr-2" />
+                          Aceitar Agora
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="border-blue-300 text-blue-100 hover:bg-blue-50 hover:text-blue-600 py-2 px-6 rounded-lg"
+                          onClick={() => handleRejectClick({
+                            title: 'Proposta Combo - Cliente 2',
+                            price: 'Setup: R$ 18.720 | Gestão: R$ 3.900/mês',
+                            benefits: [
+                              'Sistema completo com 3 agentes de IA especializados (SDR 2.0, Simulador Financeiro, Porto Seguro)',
+                              'Processo de simulação instantâneo que aumenta credibilidade e velocidade de fechamento',
+                              'Integração com APIs do Banco Central/fintechs para taxas em tempo real',
+                              'Push automático para API da Porto Seguro com processo de emissão automática',
+                              'Redução do custo operacional: substitui vários SDRs, assistentes e analistas de financiamento',
+                              'Diferencial competitivo total: nível de automação que nenhum concorrente local possui'
+                            ]
+                          })}
+                        >
+                          Recusar
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -759,42 +919,52 @@ const Index = () => {
                     <p className="text-2xl font-bold">R$ 3.200<span className="text-lg">/mês</span></p>
                   </div>
                   <div className="flex flex-col space-y-3">
-                    <Button 
-                      className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
-                      onClick={() => handleAcceptProposal({
-                        title: 'Proposta Combo - Cliente 3',
-                        price: 'Setup: R$ 17.085 | Gestão: R$ 3.200/mês',
-                        benefits: [
-                          'Sistema avançado com SDR + Follow-up automático + Nutrição de conteúdo',
-                          'Integração dupla: CRM CV + Blip para fluxo multicanal completo',
-                          'Agente de follow-up que reativa leads frios sem ação manual',
-                          'Nutrição automatizada que educa leads até a hora da venda',
-                          'Processo de vendas full digital e escalável funcionando 24/7',
-                          'Gestão centralizada com dashboard para melhoria contínua do processo'
-                        ]
-                      }, "Cliente 3")}
-                    >
-                      <CheckCircle className="h-5 w-5 mr-2" />
-                      Aceitar Agora
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="border-blue-300 text-blue-100 hover:bg-blue-50 hover:text-blue-600 py-2 px-6 rounded-lg"
-                      onClick={() => handleRejectClick({
-                        title: 'Proposta Combo - Cliente 3',
-                        price: 'Setup: R$ 17.085 | Gestão: R$ 3.200/mês',
-                        benefits: [
-                          'Sistema avançado com SDR + Follow-up automático + Nutrição de conteúdo',
-                          'Integração dupla: CRM CV + Blip para fluxo multicanal completo',
-                          'Agente de follow-up que reativa leads frios sem ação manual',
-                          'Nutrição automatizada que educa leads até a hora da venda',
-                          'Processo de vendas full digital e escalável funcionando 24/7',
-                          'Gestão centralizada com dashboard para melhoria contínua do processo'
-                        ]
-                      })}
-                    >
-                      Recusar
-                    </Button>
+                    {acceptedProposals["Cliente 3"] ? (
+                      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg text-center">
+                        <CheckCircle className="h-6 w-6 mx-auto mb-2 text-green-600" />
+                        <p className="font-semibold">Proposta Aceita!</p>
+                        <p className="text-sm">Entraremos em contato em breve.</p>
+                      </div>
+                    ) : (
+                      <>
+                        <Button 
+                          className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+                          onClick={() => handleAcceptProposal({
+                            title: 'Proposta Combo - Cliente 3',
+                            price: 'Setup: R$ 17.085 | Gestão: R$ 3.200/mês',
+                            benefits: [
+                              'Sistema avançado com SDR + Follow-up automático + Nutrição de conteúdo',
+                              'Integração dupla: CRM CV + Blip para fluxo multicanal completo',
+                              'Agente de follow-up que reativa leads frios sem ação manual',
+                              'Nutrição automatizada que educa leads até a hora da venda',
+                              'Processo de vendas full digital e escalável funcionando 24/7',
+                              'Gestão centralizada com dashboard para melhoria contínua do processo'
+                            ]
+                          }, "Cliente 3")}
+                        >
+                          <CheckCircle className="h-5 w-5 mr-2" />
+                          Aceitar Agora
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="border-blue-300 text-blue-100 hover:bg-blue-50 hover:text-blue-600 py-2 px-6 rounded-lg"
+                          onClick={() => handleRejectClick({
+                            title: 'Proposta Combo - Cliente 3',
+                            price: 'Setup: R$ 17.085 | Gestão: R$ 3.200/mês',
+                            benefits: [
+                              'Sistema avançado com SDR + Follow-up automático + Nutrição de conteúdo',
+                              'Integração dupla: CRM CV + Blip para fluxo multicanal completo',
+                              'Agente de follow-up que reativa leads frios sem ação manual',
+                              'Nutrição automatizada que educa leads até a hora da venda',
+                              'Processo de vendas full digital e escalável funcionando 24/7',
+                              'Gestão centralizada com dashboard para melhoria contínua do processo'
+                            ]
+                          })}
+                        >
+                          Recusar
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -874,6 +1044,14 @@ const Index = () => {
         </div>
       </footer>
       
+      {/* Overlay escuro quando popup está ativo */}
+      {isAnyPopupOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
+          style={{ backdropFilter: 'blur(2px)' }}
+        />
+      )}
+      
       {/* Popups de Recusa */}
       {rejectionPopup.proposalData && (
         <RejectionPopup
@@ -890,6 +1068,12 @@ const Index = () => {
         isOpen={reasonPopup}
         onClose={handleCloseReason}
         onSubmitReason={handleSubmitReason}
+        onAcceptProposal={(clientName) => {
+          setAcceptedProposals(prev => ({
+            ...prev,
+            [clientName]: true
+          }));
+        }}
         proposalData={currentProposalData}
         clientData={{
           name: "Cliente Potencial",

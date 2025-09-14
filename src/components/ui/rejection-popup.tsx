@@ -117,6 +117,7 @@ interface ReasonPopupProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmitReason: (reason: string) => void;
+  onAcceptProposal?: (clientName: string) => void;
   proposalData?: {
     title: string;
     price: string;
@@ -133,6 +134,7 @@ export const ReasonPopup: React.FC<ReasonPopupProps> = ({
   isOpen,
   onClose,
   onSubmitReason,
+  onAcceptProposal,
   proposalData,
   clientData,
 }) => {
@@ -160,11 +162,16 @@ export const ReasonPopup: React.FC<ReasonPopupProps> = ({
         return `${title}\n\nBenefícios inclusos:\n${benefits.map((benefit, index) => `${index + 1}. ${benefit}`).join('\n')}`;
       };
 
+      // Extrair nome do cliente do título da proposta
+      const clientName = proposalData?.title?.includes('Cliente 1') ? 'cliente 1' :
+                        proposalData?.title?.includes('Cliente 2') ? 'cliente 2' :
+                        proposalData?.title?.includes('Cliente 3') ? 'cliente 3' : 'cliente 1';
+
       const payload = {
         precoPropostaNumerica: extractNumericValue(proposalData?.price || "0"),
         escopoDetalhado: formatScope(),
         informacoesCliente: {
-          nome: clientData?.name || "Cliente não identificado",
+          nome: clientName,
           email: clientData?.email || "email@nao-informado.com",
           telefone: clientData?.phone || "+5521999999999"
         },
@@ -189,6 +196,17 @@ export const ReasonPopup: React.FC<ReasonPopupProps> = ({
         const responseData = await response.text();
         console.log('✅ Proposta aceita enviada com sucesso para o n8n');
         console.log('Resposta do webhook:', responseData);
+        
+        // Extrair nome do cliente do título da proposta
+        const clientName = proposalData?.title?.includes('Cliente 1') ? 'Cliente 1' :
+                          proposalData?.title?.includes('Cliente 2') ? 'Cliente 2' :
+                          proposalData?.title?.includes('Cliente 3') ? 'Cliente 3' : 'Cliente 1';
+        
+        // Atualizar estado de proposta aceita
+        if (onAcceptProposal) {
+          onAcceptProposal(clientName);
+        }
+        
         // Fechar o popup após envio bem-sucedido
         onClose();
       } else {
@@ -313,7 +331,7 @@ export const ReasonPopup: React.FC<ReasonPopupProps> = ({
           <div className="flex justify-center items-center gap-3 sm:gap-4 w-full max-w-lg">
             <Button
               onClick={handleAcceptProposal}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 sm:py-3 px-3 sm:px-5 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 text-[11px] sm:text-sm w-[160px] sm:w-[180px] overflow-hidden text-center leading-tight whitespace-nowrap text-ellipsis"
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 sm:py-3 px-3 sm:px-5 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 text-[11px] sm:text-sm w-[160px] sm:w-[180px] overflow-hidden text-center leading-tight whitespace-nowrap text-ellipsis"
             >
               🎯 Aceitar Proposta
             </Button>

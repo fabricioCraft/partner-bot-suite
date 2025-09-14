@@ -141,6 +141,14 @@ export const ReasonPopup: React.FC<ReasonPopupProps> = ({
   const [selectedReason, setSelectedReason] = React.useState("");
   const [customReason, setCustomReason] = React.useState("");
 
+  // Reset states when popup opens to ensure independent interactions
+  React.useEffect(() => {
+    if (isOpen) {
+      setSelectedReason("");
+      setCustomReason("");
+    }
+  }, [isOpen]);
+
   // Função para enviar dados para o webhook do n8n
   const handleAcceptProposal = async () => {
     try {
@@ -233,12 +241,61 @@ export const ReasonPopup: React.FC<ReasonPopupProps> = ({
     "Outro motivo (especificar)",
   ];
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const reason =
       selectedReason === "Outro motivo (especificar)"
         ? customReason
         : selectedReason;
-    onSubmitReason(reason);
+    
+    try {
+      // Preparar dados para envio ao webhook
+      const feedbackData = {
+        tipo: "recusa",
+        motivo: reason,
+        timestamp: new Date().toISOString(),
+        proposta: {
+          titulo: proposalData?.title || "Proposta não especificada",
+          preco: proposalData?.price || "Preço não especificado",
+          beneficios: proposalData?.benefits || []
+        },
+        cliente: {
+          nome: proposalData?.title?.includes('Cliente 1') ? 'cliente 1' :
+                proposalData?.title?.includes('Cliente 2') ? 'cliente 2' :
+                proposalData?.title?.includes('Cliente 3') ? 'cliente 3' : 'cliente 1',
+          email: clientData?.email || "",
+          telefone: clientData?.phone || ""
+        }
+      };
+
+      console.log('📤 Enviando feedback para webhook:', feedbackData);
+
+      const response = await fetch('https://webhooks.evolutta.com.br/webhook/api/v1/receber-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(feedbackData)
+      });
+
+      if (response.ok) {
+        console.log('✅ Feedback enviado com sucesso!');
+        alert('Obrigado pelo seu feedback! Suas informações foram registradas.');
+        onSubmitReason(reason);
+      } else {
+        const errorText = await response.text();
+        console.error('❌ Erro ao enviar feedback:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorBody: errorText
+        });
+        alert('Erro ao enviar feedback. Suas informações foram registradas localmente.');
+        onSubmitReason(reason);
+      }
+    } catch (error) {
+      console.error('❌ Erro na requisição para o webhook de feedback:', error);
+      alert('Erro de conexão. Suas informações foram registradas localmente.');
+      onSubmitReason(reason);
+    }
   };
 
   return (
@@ -286,7 +343,7 @@ export const ReasonPopup: React.FC<ReasonPopupProps> = ({
                 value={customReason}
                 onChange={(e) => setCustomReason(e.target.value)}
                 placeholder="Descreva o motivo da sua recusa..."
-                className="w-full max-w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-business-purple focus:border-transparent resize-none text-sm sm:text-base overflow-hidden box-border"
+                className="w-full max-w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-business-purple focus:border-transparent resize-none text-sm sm:text-base box-border"
                 rows={4}
               />
             </div>

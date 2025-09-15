@@ -9,7 +9,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 // Get the base path from Vite config
-const basename = import.meta.env.MODE === "production" ? "/partner-bot-suite" : "/";
+const basename = "/";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

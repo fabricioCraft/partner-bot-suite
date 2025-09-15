@@ -96,14 +96,14 @@ export const RejectionPopup: React.FC<RejectionPopupProps> = ({
         <AlertDialogFooter className="flex flex-col sm:flex-row gap-3 px-2 sm:px-0 max-w-full">
           <Button
             onClick={onClose}
-            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-2 sm:py-3 px-4 sm:px-8 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 order-2 sm:order-1 w-full sm:w-auto text-sm sm:text-base break-words"
+            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-2 sm:py-3 px-4 sm:px-8 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 w-full sm:w-auto text-sm sm:text-base break-words"
           >
             🚀 Voltar para a Proposta (Decisão Inteligente!)
           </Button>
           <Button
             variant="outline"
             onClick={onConfirmRejection}
-            className="border-red-300 text-red-600 hover:bg-red-50 py-2 sm:py-3 px-4 sm:px-6 rounded-lg order-1 sm:order-2 w-full sm:w-auto text-sm sm:text-base break-words"
+            className="border-red-300 text-red-600 hover:bg-red-50 py-2 sm:py-3 px-4 sm:px-6 rounded-lg w-full sm:w-auto text-sm sm:text-base break-words"
           >
             Confirmar Recusa
           </Button>

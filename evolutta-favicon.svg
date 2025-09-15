@@ -1,0 +1,17 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="32" height="32" fill="#0a0a0a" rx="4"/>
+  
+  <!-- Logo Icon - Simplified Chevron Stack -->
+  <g transform="translate(6, 6)">
+    <!-- Purple chevron -->
+    <path d="M0 5 L5 0 L10 5 L5 10 Z" fill="#7c3aed"/>
+    <!-- Darker purple chevron -->
+    <path d="M0 8 L5 3 L10 8 L5 13 Z" fill="#5b21b6"/>
+    <!-- Teal chevron -->
+    <path d="M0 11 L5 6 L10 11 L5 16 Z" fill="#14b8a6"/>
+  </g>
+  
+  <!-- Small E for Evolutta -->
+  <text x="18" y="22" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#7c3aed">E</text>
+</svg>

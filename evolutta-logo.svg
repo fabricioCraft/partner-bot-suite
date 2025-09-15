@@ -1,0 +1,24 @@
+<svg width="400" height="120" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="120" fill="#ffffff"/>
+  
+  <!-- Logo Icon - Chevron Stack -->
+  <g transform="translate(40, 20)">
+    <!-- Dark blue chevron -->
+    <path d="M0 20 L20 0 L40 20 L20 40 Z" fill="#2d3561"/>
+    <!-- Medium blue chevron -->
+    <path d="M0 35 L20 15 L40 35 L20 55 Z" fill="#4a5a8a"/>
+    <!-- Teal chevron -->
+    <path d="M0 50 L20 30 L40 50 L20 70 Z" fill="#14b8a6"/>
+  </g>
+  
+  <!-- Text: Evolutta -->
+  <g transform="translate(120, 30)">
+    <text x="0" y="40" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#2d3561">Evolutta</text>
+  </g>
+  
+  <!-- Text: IA -->
+  <g transform="translate(340, 30)">
+    <text x="0" y="40" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#14b8a6">IA</text>
+  </g>
+</svg>

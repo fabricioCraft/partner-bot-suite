@@ -33,7 +33,7 @@ const Index = () => {
 
   useEffect(() => {
     const isInsidePopup = (element: Element | null): boolean => {
-      if (!element) return false;
+      if (!element || !(element instanceof Element)) return false;
 
       // Verificar se o elemento está dentro de um popup
       const popupSelectors = [
@@ -80,6 +80,13 @@ const Index = () => {
     };
 
     const preventKeyScroll = (e: KeyboardEvent) => {
+      const target = e.target as Element;
+      
+      // Permitir digitação normal em campos de input e textarea
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+        return true;
+      }
+      
       const scrollKeys = [
         "ArrowUp",
         "ArrowDown",

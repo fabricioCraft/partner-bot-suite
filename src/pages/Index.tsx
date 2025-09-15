@@ -307,7 +307,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <img
-                src="/evolutta-logo.svg"
+                src="./evolutta-logo.svg"
                 alt="Evolutta IA"
                 className="h-12"
               />
@@ -1268,7 +1268,7 @@ const Index = () => {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <img
-                  src="/evolutta-logo.svg"
+                  src="./evolutta-logo.svg"
                   alt="Evolutta IA"
                   className="h-8"
                 />

@@ -17,8 +17,8 @@ import { useState, useEffect } from "react";
 
 // Funções para gerenciar localStorage com expiração
 const STORAGE_KEYS = {
-  ACCEPTED_PROPOSALS: 'acceptedProposals',
-  REJECTED_PROPOSALS: 'rejectedProposals'
+  ACCEPTED_PROPOSALS: "acceptedProposals",
+  REJECTED_PROPOSALS: "rejectedProposals",
 };
 
 const EXPIRATION_TIME = 60 * 60 * 1000; // 1 hora em millisegundos
@@ -26,7 +26,7 @@ const EXPIRATION_TIME = 60 * 60 * 1000; // 1 hora em millisegundos
 const saveToLocalStorage = (key: string, data: any) => {
   const item = {
     data,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
   localStorage.setItem(key, JSON.stringify(item));
 };
@@ -35,19 +35,19 @@ const loadFromLocalStorage = (key: string, defaultValue: any) => {
   try {
     const item = localStorage.getItem(key);
     if (!item) return defaultValue;
-    
+
     const parsed = JSON.parse(item);
     const now = Date.now();
-    
+
     // Verificar se expirou (1 hora)
     if (now - parsed.timestamp > EXPIRATION_TIME) {
       localStorage.removeItem(key);
       return defaultValue;
     }
-    
+
     return parsed.data;
   } catch (error) {
-    console.error('Erro ao carregar do localStorage:', error);
+    console.error("Erro ao carregar do localStorage:", error);
     return defaultValue;
   }
 };
@@ -59,14 +59,14 @@ const Index = () => {
   });
   const [reasonPopup, setReasonPopup] = useState(false);
   const [currentProposalData, setCurrentProposalData] = useState(null);
-  const [acceptedProposals, setAcceptedProposals] = useState(() => 
+  const [acceptedProposals, setAcceptedProposals] = useState(() =>
     loadFromLocalStorage(STORAGE_KEYS.ACCEPTED_PROPOSALS, {
       "Cliente 1": false,
       "Cliente 2": false,
       "Cliente 3": false,
     })
   );
-  const [rejectedProposals, setRejectedProposals] = useState(() => 
+  const [rejectedProposals, setRejectedProposals] = useState(() =>
     loadFromLocalStorage(STORAGE_KEYS.REJECTED_PROPOSALS, {
       "Cliente 1": false,
       "Cliente 2": false,
@@ -128,12 +128,15 @@ const Index = () => {
 
     const preventKeyScroll = (e: KeyboardEvent) => {
       const target = e.target as Element;
-      
+
       // Permitir digitação normal em campos de input e textarea
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+      if (
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA")
+      ) {
         return true;
       }
-      
+
       const scrollKeys = [
         "ArrowUp",
         "ArrowDown",
@@ -240,23 +243,30 @@ const Index = () => {
   const handleSubmitReason = (reason: string) => {
     console.log("Motivo da recusa:", reason);
     setReasonPopup(false);
-    
+
     // Marcar a proposta como recusada baseado no título da proposta atual
     if (currentProposalData?.title) {
-      const clientName = currentProposalData.title.includes("Cliente 1") ? "Cliente 1" :
-                        currentProposalData.title.includes("Cliente 2") ? "Cliente 2" :
-                        currentProposalData.title.includes("Cliente 3") ? "Cliente 3" : null;
-      
+      const clientName = currentProposalData.title.includes("Cliente 1")
+        ? "Cliente 1"
+        : currentProposalData.title.includes("Cliente 2")
+        ? "Cliente 2"
+        : currentProposalData.title.includes("Cliente 3")
+        ? "Cliente 3"
+        : null;
+
       if (clientName) {
         const newRejectedProposals = {
           ...rejectedProposals,
-          [clientName]: true
+          [clientName]: true,
         };
         setRejectedProposals(newRejectedProposals);
-        saveToLocalStorage(STORAGE_KEYS.REJECTED_PROPOSALS, newRejectedProposals);
+        saveToLocalStorage(
+          STORAGE_KEYS.REJECTED_PROPOSALS,
+          newRejectedProposals
+        );
       }
     }
-    
+
     // Aqui você pode implementar o envio do feedback para um serviço
   };
 
@@ -267,9 +277,12 @@ const Index = () => {
   const handleContactUs = () => {
     // Redirecionar para WhatsApp ou abrir modal de contato
     const whatsappNumber = "5511999999999"; // Substitua pelo número real
-    const message = "Olá! Gostaria de renegociar a proposta que inicialmente recusei. Podemos conversar?";
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    const message =
+      "Olá! Gostaria de renegociar a proposta que inicialmente recusei. Podemos conversar?";
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+      message
+    )}`;
+    window.open(whatsappUrl, "_blank");
   };
 
   const handleAcceptProposal = async (
@@ -355,7 +368,10 @@ const Index = () => {
           [clientName]: true,
         };
         setAcceptedProposals(newAcceptedProposals);
-        saveToLocalStorage(STORAGE_KEYS.ACCEPTED_PROPOSALS, newAcceptedProposals);
+        saveToLocalStorage(
+          STORAGE_KEYS.ACCEPTED_PROPOSALS,
+          newAcceptedProposals
+        );
 
         alert("Proposta aceita com sucesso! Entraremos em contato em breve.");
       } else {
@@ -539,7 +555,7 @@ const Index = () => {
               {
                 icon: Zap,
                 title: "Setup + Integrações",
-                desc: "Implementação completa em 15 dias",
+                desc: "Implementação completa",
               },
               {
                 icon: TrendingUp,
@@ -727,9 +743,13 @@ const Index = () => {
                       ) : rejectedProposals["Cliente 1"] ? (
                         <div className="bg-amber-50 border border-amber-300 text-amber-800 px-4 py-4 rounded-lg text-center">
                           <AlertTriangle className="h-6 w-6 mx-auto mb-2 text-amber-600" />
-                          <p className="font-semibold mb-2">Proposta Inicialmente Recusada</p>
+                          <p className="font-semibold mb-2">
+                            Proposta Inicialmente Recusada
+                          </p>
                           <p className="text-sm mb-4 leading-relaxed">
-                            Esta proposta foi inicialmente recusada, mas você ainda pode aproveitar esta oportunidade e entrar em um acordo.
+                            Esta proposta foi inicialmente recusada, mas você
+                            ainda pode aproveitar esta oportunidade e entrar em
+                            um acordo.
                           </p>
                           <Button
                             className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 w-full"
@@ -989,9 +1009,13 @@ const Index = () => {
                     ) : rejectedProposals["Cliente 2"] ? (
                       <div className="bg-amber-50 border border-amber-300 text-amber-800 px-4 py-4 rounded-lg text-center">
                         <AlertTriangle className="h-6 w-6 mx-auto mb-2 text-amber-600" />
-                        <p className="font-semibold mb-2">Proposta Inicialmente Recusada</p>
+                        <p className="font-semibold mb-2">
+                          Proposta Inicialmente Recusada
+                        </p>
                         <p className="text-sm mb-4 leading-relaxed">
-                          Esta proposta foi inicialmente recusada, mas você ainda pode aproveitar esta oportunidade e entrar em um acordo.
+                          Esta proposta foi inicialmente recusada, mas você
+                          ainda pode aproveitar esta oportunidade e entrar em um
+                          acordo.
                         </p>
                         <Button
                           className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 w-full"
@@ -1269,9 +1293,13 @@ const Index = () => {
                     ) : rejectedProposals["Cliente 3"] ? (
                       <div className="bg-amber-50 border border-amber-300 text-amber-800 px-4 py-4 rounded-lg text-center">
                         <AlertTriangle className="h-6 w-6 mx-auto mb-2 text-amber-600" />
-                        <p className="font-semibold mb-2">Proposta Inicialmente Recusada</p>
+                        <p className="font-semibold mb-2">
+                          Proposta Inicialmente Recusada
+                        </p>
                         <p className="text-sm mb-4 leading-relaxed">
-                          Esta proposta foi inicialmente recusada, mas você ainda pode aproveitar esta oportunidade e entrar em um acordo.
+                          Esta proposta foi inicialmente recusada, mas você
+                          ainda pode aproveitar esta oportunidade e entrar em um
+                          acordo.
                         </p>
                         <Button
                           className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 w-full"
@@ -1462,7 +1490,10 @@ const Index = () => {
             [clientName]: true,
           };
           setAcceptedProposals(newAcceptedProposals);
-          saveToLocalStorage(STORAGE_KEYS.ACCEPTED_PROPOSALS, newAcceptedProposals);
+          saveToLocalStorage(
+            STORAGE_KEYS.ACCEPTED_PROPOSALS,
+            newAcceptedProposals
+          );
         }}
         proposalData={currentProposalData}
         clientData={{
